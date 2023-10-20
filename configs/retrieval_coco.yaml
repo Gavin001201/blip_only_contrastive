@@ -1,9 +1,9 @@
-image_root: '/export/share/datasets/vision/coco/images/'
+image_root: '/mnt/workspace/Project/vision-language-models-are-bows/coco'
 ann_root: 'annotation'
 dataset: 'coco'
 
 # set pretrained as a file path or an url
-pretrained: 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_retrieval_coco.pth'
+pretrained: 'https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_capfilt_large.pth'
 
 # size of vit model; base or large
 

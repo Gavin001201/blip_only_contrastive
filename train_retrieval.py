@@ -34,7 +34,7 @@ def train(model, data_loader, optimizer, epoch, device, config):
     
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
-    metric_logger.add_meter('loss_itm', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
+    # metric_logger.add_meter('loss_itm', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
     metric_logger.add_meter('loss_ita', utils.SmoothedValue(window_size=1, fmt='{value:.4f}'))
     header = 'Train Epoch: [{}]'.format(epoch)
     print_freq = 50
@@ -48,15 +48,17 @@ def train(model, data_loader, optimizer, epoch, device, config):
         else:
             alpha = config['alpha']*min(1,i/len(data_loader))
 
-        loss_ita, loss_itm = model(image, caption, alpha=alpha, idx=idx)                  
-        loss = loss_ita + loss_itm
+        loss = model(image, caption, alpha=alpha, idx=idx)                  
+
         
         optimizer.zero_grad()
         loss.backward()
+        # for name, param in model.named_parameters():
+        #     if param.grad is None:
+        #         print(name)
         optimizer.step()    
         
-        metric_logger.update(loss_itm=loss_itm.item())
-        metric_logger.update(loss_ita=loss_ita.item())
+        metric_logger.update(loss_ita=loss.item())
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
 
     # gather the stats from all processes
@@ -253,6 +255,10 @@ def main(args, config):
 
     model = model.to(device)   
     
+    total_num = sum(p.numel() for p in model.parameters())
+    trainable_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print('Total:', total_num, 'Trainable:', trainable_num)
+
     model_without_ddp = model
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
